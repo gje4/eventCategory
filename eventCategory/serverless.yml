@@ -6,9 +6,10 @@ functions:
   eventCategory:
     handler: handler.eventCategory
     environment:
-      STORE_HASH: { { BC_STORE_HASH } }
-      BC_CLIENT: { { BC_CLIENT_ID } }
-      BC_TOKEN: { { BC_CLIENT_SECRET } }
+      STORE_HASH: lykxcl4bnx
+      BC_CLIENT: 7czaa4nudep5gc6re0elrsxjcd1elr1
+      BC_TOKEN: lku69qcsw458zcrck4tp1mc0qbeck0t
+      WEATHER_TOKEN: ba38e1c2f660e9db5e7054cb43b63014
     events:
       - http:
           path: eventCategory

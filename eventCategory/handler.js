@@ -16,21 +16,36 @@ async function getOrderData(orderDataId) {
   return orderData;
 }
 
-async function getTransactionId(orderDataId) {
+async function getWeatherByZip(zipCode) {
+  var temps = [];
+  var weatherDesc = [];
   const options = {
     method: "GET",
-    uri: `https://api.bigcommerce.com/stores/${process.env.STORE_HASH}/v3/orders/${orderDataId}/transactions`,
+    uri: `http://api.openweathermap.org/data/2.5/forecast?zip=${zipCode},US&&units=imperial&cnt=7&appid=${process.env.WEATHER_TOKEN}`,
     headers: {
-      accept: "application/json",
-      "X-Auth-Client": process.env.BC_CLIENT,
-      "X-Auth-Token": process.env.BC_TOKEN
+      accept: "application/json"
     }
   };
-  var transactionData = await request(options);
-  console.log("transaction", transactionData);
-  return transactionData;
-}
+  var weatherData = await request(options);
+  console.log("transaction", JSON.parse(weatherData));
+  var weekly = JSON.parse(weatherData);
+  var weather = weekly.list;
+  weather.forEach(function(weather) {
+    temps.push(weather.main.temp);
 
+    console.log("main", weather.weather);
+    weatherDesc.push(weather.weather);
+  });
+
+  console.log("temps", temps);
+  const sum = temps.reduce((a, b) => a + b, 0);
+  const avg = sum / temps.length || 0;
+  console.log("avg", avg);
+
+  console.log("weatherDesc", weatherDesc);
+
+  return { weatherDesc, avg, temps };
+}
 
 module.exports.eventCategory = async event => {
   let returnValue = {
@@ -40,10 +55,13 @@ module.exports.eventCategory = async event => {
       message: `Something went wrong.`
     })
   };
-  let data = JSON.parse(event.body);
-  //get order order data
-  try {
 
+  console.log("data", event.zipCode);
+  try {
+    const { weatherDesc, avg, temps } = await getWeatherByZip(event.zipCode);
+    console.log("averagetemp", avg);
+
+    //fetch products based on averagetemp
 
     returnValue = {
       statusCode: 200,
@@ -52,7 +70,7 @@ module.exports.eventCategory = async event => {
         "Access-Control-Allow-Origin": "*",
         "Content-Type": "application/json"
       },
-      body: JSON.stringify("Checked for subscription")
+      body: JSON.stringify("Products", weatherDesc)
     };
   } catch (err) {
     returnValue = {
