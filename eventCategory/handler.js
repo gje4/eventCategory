@@ -8,12 +8,17 @@ const bigCommerce = new BigCommerce({
   accessToken: process.env.BC_TOKEN,
   storeHash: process.env.STORE_HASH,
   responseType: "json",
-  apiVersion: "v2"
+  apiVersion: "v3"
 });
 
-async function getOrderData(orderDataId) {
-  var orderData = await bigCommerce.get(`/orders/${orderDataId}`);
-  return orderData;
+async function getProducts(catID) {
+  console.log("whats the weather", catID);
+
+  var catData = await bigCommerce.get(
+    `/catalog/products?categories:in=${catID}`
+  );
+  console.log("catData", catData);
+  return catData;
 }
 
 async function getWeatherByZip(zipCode) {
@@ -62,6 +67,16 @@ module.exports.eventCategory = async event => {
     console.log("averagetemp", avg);
 
     //fetch products based on averagetemp
+    var categoryID;
+
+    if (avg <= 40) {
+      categoryID = 27;
+    } else if (avg > 40 && avg <= 60) {
+      categoryID = 26;
+    } else {
+      console.log("no cat for this temp");
+    }
+    const products = await getProducts(categoryID);
 
     returnValue = {
       statusCode: 200,
@@ -70,7 +85,7 @@ module.exports.eventCategory = async event => {
         "Access-Control-Allow-Origin": "*",
         "Content-Type": "application/json"
       },
-      body: JSON.stringify("Products", weatherDesc)
+      body: JSON.stringify("Products", weatherDesc, temps, avg, products)
     };
   } catch (err) {
     returnValue = {
