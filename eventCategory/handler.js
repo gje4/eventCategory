@@ -15,7 +15,7 @@ async function getProducts(catID) {
   console.log("whats the weather", catID);
 
   var catData = await bigCommerce.get(
-    `/catalog/products?categories:in=${catID}`
+    `/catalog/products?categories:in=${catID}&limit=7`
   );
   console.log("catData", catData);
   return catData;
@@ -37,7 +37,6 @@ async function getWeatherByZip(zipCode) {
   var weather = weekly.list;
   weather.forEach(function(weather) {
     temps.push(weather.main.temp);
-
     console.log("main", weather.weather);
     weatherDesc.push(weather.weather);
   });
@@ -51,6 +50,7 @@ async function getWeatherByZip(zipCode) {
 
   return { weatherDesc, avg, temps };
 }
+
 
 module.exports.eventCategory = async event => {
   let returnValue = {
@@ -69,13 +69,16 @@ module.exports.eventCategory = async event => {
     //fetch products based on averagetemp
     var categoryID;
 
-    if (avg <= 40) {
-      categoryID = 27;
+    if (avg <= 40 ) {
+      categoryID = 24;
     } else if (avg > 40 && avg <= 60) {
       categoryID = 26;
+    } else if (avg > 60) {
+      categoryID = 25; 
     } else {
       console.log("no cat for this temp");
     }
+    
     const products = await getProducts(categoryID);
 
     returnValue = {
