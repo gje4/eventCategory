@@ -14,8 +14,9 @@ const bigCommerce = new BigCommerce({
 async function getProducts(catID) {
   console.log("whats the weather", catID);
 
+  //include_fields to limit data returned, this can be modified to add other fields or removed if wanting all data
   var catData = await bigCommerce.get(
-    `/catalog/products?categories:in=${catID}&limit=7`
+    `/catalog/products?categories:in=${catID}&limit=7&include_fields=name,sku,price,description,variants`
   );
   console.log("catData", catData);
   return catData;
@@ -48,6 +49,7 @@ async function getWeatherByZip(zipCode) {
 
   console.log("weatherDesc", weatherDesc);
 
+ 
   return { weatherDesc, avg, temps };
 }
 
@@ -69,6 +71,7 @@ module.exports.eventCategory = async event => {
     //fetch products based on averagetemp
     var categoryID;
 
+    //working if statement with temperature ranges only
     if (avg <= 40 ) {
       categoryID = 24;
     } else if (avg > 40 && avg <= 60) {
@@ -78,7 +81,20 @@ module.exports.eventCategory = async event => {
     } else {
       console.log("no cat for this temp");
     }
-    
+
+    //combined if statement with temperature ranges and weatherDesc
+    // if (weatherDesc[0][0].main == "rain" ) {
+    //   categoryID = 26;
+    // } else if (weatherDesc[0][0].main == "snow" ) {
+    //   categoryID = 24;
+    // } else if (avg > 40 && avg <= 60) {
+    //   categoryID = 26;
+    // } else if (avg > 60) {
+    //   categoryID = 25; 
+    // } else {
+    //   console.log("no cat for this temp");
+    // }
+
     const products = await getProducts(categoryID);
 
     returnValue = {
